@@ -15,7 +15,7 @@
 
 ## Phase 1 — Foundation (Months 1–3)
 
-- [ ] **Unity project init** — Create Unity project targeting URP, configure AR Foundation package, add ARKit XR Plugin (iOS) and ARCore XR Plugin (Android), commit baseline ProjectSettings
+- [x] **Unity project init** — Created URP Unity project scaffold: Packages/manifest.json (AR Foundation, ARKit, ARCore, Barracuda, Addressables, URP), ProjectSettings, Assets folder structure, IPlatformAdapter interface + iOS/Android/Editor implementations, PerformanceTier detection. See PR for details.
 - [ ] **AR session scaffold** — Basic AR camera scene: plane detection enabled, session origin, AR plane visualizer, builds and runs on both platforms (or simulator)
 - [ ] **IPlatformAdapter interface** — Define `IPlatformAdapter` C# interface (haptics, camera permissions, share sheet, depth API stub), create `IOSPlatformAdapter` and `AndroidPlatformAdapter` stubs
 - [ ] **OpenCV integration** — Add OpenCVForUnity (or equivalent), verify cross-platform build, write a smoke test that processes a static image and returns contours
