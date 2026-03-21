@@ -22,6 +22,17 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
   const { capabilities, visionReady, classifierReady, lastDetection, arStatus } = useAppStore()
   const { mode, isActive, start, stop, handleTap, clear, needsOrientationPermission } = arHook
   const [glyphPanelOpen, setGlyphPanelOpen] = useState(false)
+  const [bgFlash, setBgFlash] = useState(false)
+
+  const handleBgPress = useCallback(() => {
+    if (hasBg && onClearBg) {
+      onClearBg()
+    } else if (onCaptureBg) {
+      setBgFlash(true)
+      onCaptureBg()
+      setTimeout(() => setBgFlash(false), 600)
+    }
+  }, [hasBg, onCaptureBg, onClearBg])
 
   const onSceneTap = useCallback(
     (e: React.TouchEvent | React.MouseEvent) => {
@@ -92,19 +103,20 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
           {isActive && onCaptureBg && (
             <button
               style={btnStyle({
-                background: hasBg ? 'rgba(16,185,129,0.4)' : 'rgba(99,102,241,0.4)',
-                border: `1px solid ${hasBg ? 'rgba(16,185,129,0.6)' : 'rgba(99,102,241,0.5)'}`,
+                // Inactive: same as other buttons — dark transparent
+                // Active (bg locked): bright green so it's unmistakably on
+                background: bgFlash ? '#6366f1' : hasBg ? '#10b981' : 'rgba(0,0,0,0.5)',
+                border: hasBg ? '2px solid #34d399' : '1px solid rgba(255,255,255,0.2)',
                 borderRadius: 20,
-                padding: '6px 12px',
-                fontSize: 12,
-                fontWeight: 600,
+                padding: '8px 16px',
+                fontSize: 13,
+                fontWeight: hasBg ? 700 : 500,
+                minWidth: 88,
+                minHeight: 44,
               })}
-              onClick={() => {
-                if (hasBg && onClearBg) onClearBg()
-                else onCaptureBg()
-              }}
+              onClick={handleBgPress}
             >
-              {hasBg ? '✅ BG' : '📷 Set BG'}
+              {bgFlash ? '📸 Captured!' : hasBg ? '✅ BG On' : 'Set BG'}
             </button>
           )}
 
