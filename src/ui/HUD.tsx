@@ -8,9 +8,12 @@ import GlyphReferencePanel from './GlyphReferencePanel'
 interface HUDProps {
   sceneRef: React.MutableRefObject<SceneManager | null>
   arHook: ReturnType<typeof useAR>
+  hasBg?: boolean
+  onCaptureBg?: () => void
+  onClearBg?: () => void
 }
 
-export default function HUD({ arHook }: HUDProps) {
+export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps) {
   const { capabilities, visionReady, classifierReady, lastDetection, arStatus } = useAppStore()
   const { mode, isActive, start, stop, handleTap, clear, needsOrientationPermission } = arHook
   const [glyphPanelOpen, setGlyphPanelOpen] = useState(false)
@@ -76,23 +79,51 @@ export default function HUD({ arHook }: HUDProps) {
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           {isActive && (
-            <button
-              style={{
-                pointerEvents: 'all',
-                background: 'rgba(0,0,0,0.5)',
-                border: 'none',
-                borderRadius: 20,
-                padding: '6px 14px',
-                color: '#fff',
-                fontSize: 13,
-              }}
-              onClick={e => {
-                e.stopPropagation()
-                clear()
-              }}
-            >
-              Clear
-            </button>
+            <>
+              {onCaptureBg && (
+                <button
+                  style={{
+                    pointerEvents: 'all',
+                    background: hasBg ? 'rgba(16,185,129,0.4)' : 'rgba(99,102,241,0.4)',
+                    border: `1px solid ${hasBg ? 'rgba(16,185,129,0.6)' : 'rgba(99,102,241,0.5)'}`,
+                    borderRadius: 20,
+                    padding: '6px 12px',
+                    color: '#fff',
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                  onClick={e => {
+                    e.stopPropagation()
+                    if (hasBg && onClearBg) onClearBg()
+                    else onCaptureBg()
+                  }}
+                  title={
+                    hasBg
+                      ? 'Background locked — tap to reset'
+                      : 'Lock current view as background to detect drawn marks'
+                  }
+                >
+                  {hasBg ? '✅ BG' : '📷 Set BG'}
+                </button>
+              )}
+              <button
+                style={{
+                  pointerEvents: 'all',
+                  background: 'rgba(0,0,0,0.5)',
+                  border: 'none',
+                  borderRadius: 20,
+                  padding: '6px 14px',
+                  color: '#fff',
+                  fontSize: 13,
+                }}
+                onClick={e => {
+                  e.stopPropagation()
+                  clear()
+                }}
+              >
+                Clear
+              </button>
+            </>
           )}
           <button
             style={{
