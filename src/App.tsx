@@ -6,6 +6,7 @@ import { usePipeline } from '@vision/usePipeline'
 import { useAR } from '@ar/useAR'
 import HUD from '@ui/HUD'
 import LoadingScreen from '@ui/LoadingScreen'
+import CapabilitiesScreen from '@ui/CapabilitiesScreen'
 import PWAInstallBanner from '@pwa/PWAInstallBanner'
 import { useSceneDB } from '@db/useSceneDB'
 import type { DetectionEvent } from '@vision/usePipeline'
@@ -13,13 +14,21 @@ import type { DetectionEvent } from '@vision/usePipeline'
 const CANVAS_ID = 'canvas-mount'
 
 export default function App() {
-  const { capabilities, setCapabilities, isARActive, loadingStage, setLoadingStage, setArStatus } =
-    useAppStore()
+  const {
+    capabilities,
+    setCapabilities,
+    isARActive,
+    loadingStage,
+    setLoadingStage,
+    setArStatus,
+    arStatus,
+  } = useAppStore()
 
   const sceneRef = useScene(CANVAS_ID)
   const arHook = useAR(sceneRef)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [appReady, setAppReady] = useState(false)
+  const [capsChecked, setCapsChecked] = useState(false)
   const { saveScene, updateScene } = useSceneDB()
   const currentSceneId = useRef<number | null>(null)
   const autoSaveTimer = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -80,10 +89,28 @@ export default function App() {
     [arHook.arRef, setArStatus]
   )
 
+  const onScanFeedback = useCallback(
+    (quality: 'none' | 'poor' | 'ok') => {
+      // Only update scan status if we're in scanning/detecting mode (not placing)
+      if (
+        arStatus !== 'scanning' &&
+        arStatus !== 'detecting' &&
+        arStatus !== 'scanning-no-surface' &&
+        arStatus !== 'scanning-poor-surface'
+      )
+        return
+      if (quality === 'none') setArStatus('scanning-no-surface')
+      else if (quality === 'poor') setArStatus('scanning-poor-surface')
+      else setArStatus('detecting')
+    },
+    [arStatus, setArStatus]
+  )
+
   usePipeline({
     videoRef,
     enabled: isARActive && arHook.mode === 'camera-fallback',
     onDetection,
+    onScanFeedback,
   })
 
   if (import.meta.env.DEV) {
@@ -103,8 +130,11 @@ export default function App() {
       }}
     >
       <div id={CANVAS_ID} style={{ position: 'absolute', inset: 0 }} />
-      {capabilities && appReady && <HUD sceneRef={sceneRef} arHook={arHook} />}
-      {capabilities && appReady && <PWAInstallBanner />}
+      {capabilities && appReady && capsChecked && <HUD sceneRef={sceneRef} arHook={arHook} />}
+      {capabilities && appReady && capsChecked && <PWAInstallBanner />}
+      {capabilities && appReady && !capsChecked && (
+        <CapabilitiesScreen capabilities={capabilities} onContinue={() => setCapsChecked(true)} />
+      )}
       {!appReady && <LoadingScreen stage={loadingScreenStage} />}
     </div>
   )

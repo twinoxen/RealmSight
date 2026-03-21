@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { Capabilities } from '@platform/capabilities'
 import type { ClassificationResult } from '@vision/GlyphClassifier'
 import type { ARStatus } from '@ui/StatusChip'
+export type { ARStatus }
 
 export type LoadingStage = 'app' | 'camera' | 'vision' | 'classifier' | 'done'
 
