@@ -1,11 +1,19 @@
 import { create } from 'zustand'
 import type { Capabilities } from '@platform/capabilities'
+import type { ClassificationResult } from '@vision/GlyphClassifier'
 
 interface AppState {
   capabilities: Capabilities | null
   setCapabilities: (caps: Capabilities) => void
   isARActive: boolean
   setARActive: (active: boolean) => void
+  // Vision
+  visionReady: boolean
+  setVisionReady: (ready: boolean) => void
+  classifierReady: boolean
+  setClassifierReady: (ready: boolean) => void
+  lastDetection: ClassificationResult | null
+  setLastDetection: (result: ClassificationResult | null) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -13,4 +21,10 @@ export const useAppStore = create<AppState>((set) => ({
   setCapabilities: (capabilities) => set({ capabilities }),
   isARActive: false,
   setARActive: (isARActive) => set({ isARActive }),
+  visionReady: false,
+  setVisionReady: (visionReady) => set({ visionReady }),
+  classifierReady: false,
+  setClassifierReady: (classifierReady) => set({ classifierReady }),
+  lastDetection: null,
+  setLastDetection: (lastDetection) => set({ lastDetection }),
 }))
