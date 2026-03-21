@@ -186,5 +186,5 @@ export function usePipeline({
 
   const hasBackground = () => backgroundRef.current !== null
 
-  return { clearBackground, hasBackground }
+  return { clearBackground, hasBackground, backgroundRef }
 }
