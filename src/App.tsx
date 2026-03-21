@@ -7,6 +7,7 @@ import { useAR } from '@ar/useAR'
 import HUD from '@ui/HUD'
 import LoadingScreen from '@ui/LoadingScreen'
 import PWAInstallBanner from '@pwa/PWAInstallBanner'
+import { useSceneDB } from '@db/useSceneDB'
 import type { DetectionEvent } from '@vision/usePipeline'
 
 const CANVAS_ID = 'canvas-mount'
@@ -27,6 +28,9 @@ export default function App() {
   const arHook = useAR(sceneRef)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [appReady, setAppReady] = useState(false)
+  const { saveScene, updateScene } = useSceneDB()
+  const currentSceneId = useRef<number | null>(null)
+  const autoSaveTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Stage 1: detect capabilities (fast — sync)
   useEffect(() => {
@@ -53,11 +57,29 @@ export default function App() {
     if (isARActive) {
       videoRef.current = document.querySelector('video') as HTMLVideoElement | null
       setArStatus('scanning')
+
+      // Auto-save every 10 seconds
+      autoSaveTimer.current = setInterval(async () => {
+        const ar = arHook.arRef?.current
+        if (!ar) return
+        const models = ar.exportModels()
+        if (models.length === 0) return
+        if (currentSceneId.current === null) {
+          const id = await saveScene('Untitled Scene', models)
+          currentSceneId.current = id
+        } else {
+          await updateScene(currentSceneId.current, models)
+        }
+      }, 10000)
     } else {
       videoRef.current = null
       setArStatus('idle')
+      if (autoSaveTimer.current) {
+        clearInterval(autoSaveTimer.current)
+        autoSaveTimer.current = null
+      }
     }
-  }, [isARActive, setArStatus])
+  }, [isARActive, setArStatus, arHook, saveScene, updateScene])
 
   const onDetection = useCallback(
     (event: DetectionEvent) => {

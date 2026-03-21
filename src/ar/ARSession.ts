@@ -12,6 +12,7 @@ export class ARSession {
   private hitTestSource: XRHitTestSource | null = null
   private reticle: THREE.Mesh
   private placedShapes: THREE.Object3D[] = []
+  private placedGlyphTypes: string[] = []
   mode: ARMode = 'none'
 
   constructor(private scene: SceneManager) {
@@ -170,6 +171,41 @@ export class ARSession {
   clearShapes() {
     this.placedShapes.forEach(s => this.scene.scene.remove(s))
     this.placedShapes = []
+    this.placedGlyphTypes = []
+  }
+
+  /** Export placed models for scene persistence */
+  exportModels() {
+    return this.placedShapes.map((mesh, i) => ({
+      glyphType: this.placedGlyphTypes[i] ?? 'unknown',
+      position: { x: mesh.position.x, y: mesh.position.y, z: mesh.position.z },
+      rotation: {
+        x: mesh.quaternion.x,
+        y: mesh.quaternion.y,
+        z: mesh.quaternion.z,
+        w: mesh.quaternion.w,
+      },
+      scale: mesh.scale.x,
+    }))
+  }
+
+  /** Restore models from saved scene (no animation) */
+  restoreModels(
+    models: {
+      glyphType: string
+      position: { x: number; y: number; z: number }
+      rotation: { x: number; y: number; z: number; w: number }
+      scale: number
+    }[]
+  ) {
+    models.forEach(m => {
+      const pos = new THREE.Vector3(m.position.x, m.position.y, m.position.z)
+      const quat = new THREE.Quaternion(m.rotation.x, m.rotation.y, m.rotation.z, m.rotation.w)
+      this.spawnGlyphShape(pos, m.glyphType)
+      const mesh = this.placedShapes[this.placedShapes.length - 1]
+      mesh.quaternion.copy(quat)
+      mesh.scale.setScalar(m.scale)
+    })
   }
 
   placeGlyphAtNormalized(nx: number, ny: number, glyphLabel: string) {
@@ -234,6 +270,7 @@ export class ARSession {
     mesh.castShadow = true
     this.scene.scene.add(mesh)
     this.placedShapes.push(mesh)
+    this.placedGlyphTypes.push(glyphLabel)
     this.scene.placeAnim.play(mesh)
   }
 }
