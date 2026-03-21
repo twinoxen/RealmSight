@@ -169,9 +169,22 @@ export class ARSession {
   }
 
   clearShapes() {
-    this.placedShapes.forEach(s => this.scene.scene.remove(s))
+    this.placedShapes.forEach(s => {
+      this.scene.scene.remove(s)
+      // Dispose geometry and material to free GPU memory
+      if (s instanceof THREE.Mesh) {
+        s.geometry?.dispose()
+        if (Array.isArray(s.material)) {
+          s.material.forEach(m => m.dispose())
+        } else {
+          s.material?.dispose()
+        }
+      }
+    })
     this.placedShapes = []
     this.placedGlyphTypes = []
+    // Also cancel any in-flight place animations
+    this.scene.placeAnim.cancelAll()
   }
 
   /** Export placed models for scene persistence */
