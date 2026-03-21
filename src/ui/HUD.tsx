@@ -12,7 +12,7 @@ interface HUDProps {
 
 export default function HUD({ arHook }: HUDProps) {
   const { capabilities, visionReady, classifierReady, lastDetection, arStatus } = useAppStore()
-  const { mode, isActive, start, stop, handleTap, clear } = arHook
+  const { mode, isActive, start, stop, handleTap, clear, needsOrientationPermission } = arHook
   const [glyphPanelOpen, setGlyphPanelOpen] = useState(false)
 
   const onTap = useCallback(
@@ -23,6 +23,16 @@ export default function HUD({ arHook }: HUDProps) {
     },
     [isActive, handleTap]
   )
+
+  const handleStart = useCallback(() => {
+    // On iOS 13+, DeviceOrientationEvent.requestPermission must be called from a user gesture
+    // We call it here before starting AR so the stabilization hook can use it
+    const dev = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
+    if (needsOrientationPermission && typeof dev.requestPermission === 'function') {
+      dev.requestPermission().catch(() => {})
+    }
+    start()
+  }, [start, needsOrientationPermission])
 
   return (
     <div
@@ -160,7 +170,7 @@ export default function HUD({ arHook }: HUDProps) {
           onClick={e => {
             e.stopPropagation()
             if (isActive) stop()
-            else start()
+            else handleStart()
           }}
         >
           {isActive ? 'Stop AR' : 'Start AR'}

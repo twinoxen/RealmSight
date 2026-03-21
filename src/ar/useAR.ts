@@ -1,6 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, useEffect } from 'react'
 import { ARSession } from './ARSession'
 import { useCameraFallback } from './useCameraFallback'
+import { useStabilization } from './useStabilization'
 import { useAppStore } from '@store/appStore'
 import type { SceneManager } from '@scene/SceneManager'
 
@@ -10,7 +11,21 @@ export function useAR(sceneRef: React.MutableRefObject<SceneManager | null>) {
   const [mode, setMode] = useState<'webxr' | 'camera-fallback' | 'none'>('none')
   const [isActive, setIsActive] = useState(false)
 
+  // Track if we need to request orientation permissions
+  const [needsOrientationPermission, setNeedsOrientationPermission] = useState(false)
+
   const { start: startCamera, stop: stopCamera } = useCameraFallback()
+
+  // Apply device orientation stabilization when in fallback mode
+  useStabilization(sceneRef, isActive && mode === 'camera-fallback')
+
+  useEffect(() => {
+    // Check if we're on iOS and might need orientation permissions
+    const dev = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
+    if (typeof dev.requestPermission === 'function') {
+      setNeedsOrientationPermission(true)
+    }
+  }, [])
 
   const start = useCallback(async () => {
     const scene = sceneRef.current
@@ -32,11 +47,6 @@ export function useAR(sceneRef: React.MutableRefObject<SceneManager | null>) {
     setIsActive(true)
     setARActive(true)
     setArStatus('scanning')
-
-    // For iOS fallback, show estimated surface plane after a brief delay
-    if (!supported) {
-      setTimeout(() => ar.showFallbackSurface(), 1200)
-    }
   }, [sceneRef, setARActive, setArStatus, startCamera])
 
   const stop = useCallback(async () => {
@@ -66,5 +76,5 @@ export function useAR(sceneRef: React.MutableRefObject<SceneManager | null>) {
     setArStatus('detecting')
   }, [setArStatus])
 
-  return { mode, isActive, start, stop, handleTap, clear, arRef }
+  return { mode, isActive, start, stop, handleTap, clear, arRef, needsOrientationPermission }
 }
