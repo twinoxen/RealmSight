@@ -13,18 +13,16 @@ export default function App() {
   useEffect(() => {
     const caps = detectCapabilities()
     setCapabilities(caps)
-    console.log('[RealmSight] Capabilities:', caps)
   }, [setCapabilities])
 
-  // Expose sceneRef for debugging in dev
   if (import.meta.env.DEV) {
-    (window as Window & { __scene?: typeof sceneRef })..__scene = sceneRef
+    (window as Window & { __scene?: typeof sceneRef }).__scene = sceneRef
   }
 
   return (
     <div style={{ width: '100vw', height: '100dvh', overflow: 'hidden', background: '#000', position: 'relative' }}>
       <div id={CANVAS_ID} style={{ position: 'absolute', inset: 0 }} />
-      {capabilities && <HUD />}
+      {capabilities && <HUD sceneRef={sceneRef} />}
     </div>
   )
 }
