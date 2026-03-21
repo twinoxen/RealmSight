@@ -21,7 +21,8 @@ function getOffscreenCtx(w: number, h: number) {
     offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true })
   }
   if (offscreenCanvas.width !== w || offscreenCanvas.height !== h) {
-    offscreenCanvas.width = w; offscreenCanvas.height = h
+    offscreenCanvas.width = w
+    offscreenCanvas.height = h
   }
   return offscreenCtx!
 }
@@ -100,7 +101,12 @@ export function usePipeline({ videoRef, modelUrl, onDetection, enabled }: Pipeli
 
         const result = await classifier.classify(crop)
         if (result) {
-          const event: DetectionEvent = { glyph: result, contour, nx: contour.cx / W, ny: contour.cy / H }
+          const event: DetectionEvent = {
+            glyph: result,
+            contour,
+            nx: contour.cx / W,
+            ny: contour.cy / H,
+          }
           setLastDetection(result)
           onDetectionRef.current(event)
           break
@@ -118,8 +124,13 @@ export function usePipeline({ videoRef, modelUrl, onDetection, enabled }: Pipeli
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       return
     }
-    const loop = () => { processOneFrame(); rafRef.current = requestAnimationFrame(loop) }
+    const loop = () => {
+      processOneFrame()
+      rafRef.current = requestAnimationFrame(loop)
+    }
     rafRef.current = requestAnimationFrame(loop)
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
   }, [enabled, processOneFrame])
 }
