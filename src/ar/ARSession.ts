@@ -134,12 +134,32 @@ export class ARSession {
       if (hit) {
         this.reticle.visible = true
         this.reticle.matrix.fromArray(hit.transform.matrix)
+        // Show surface plane at hit position
+        const pos = new THREE.Vector3()
+        const quat = new THREE.Quaternion()
+        const sc = new THREE.Vector3()
+        this.reticle.matrix.decompose(pos, quat, sc)
+        this.scene.surfacePlane.show(pos)
       }
     } else {
       this.reticle.visible = false
+      this.scene.surfacePlane.hide()
     }
 
     this.scene.renderer.render(this.scene.scene, this.scene.camera)
+  }
+
+  /** Show surface plane at iOS fallback estimated position */
+  showFallbackSurface() {
+    const cameraDir = new THREE.Vector3()
+    this.scene.camera.getWorldDirection(cameraDir)
+    const pos = this.scene.camera.position.clone().addScaledVector(cameraDir, 1.2)
+    pos.y -= 0.1
+    this.scene.surfacePlane.show(pos)
+  }
+
+  hideSurface() {
+    this.scene.surfacePlane.hide()
   }
 
   async stop() {
