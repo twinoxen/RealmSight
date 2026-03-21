@@ -1,57 +1,39 @@
-# Unity
-[Ll]ibrary/
-[Tt]emp/
-[Oo]bj/
-[Bb]uild/
-[Bb]uilds/
-[Ll]ogs/
-[Uu]ser[Ss]ettings/
-*.pidb.meta
-*.pdb.meta
-*.mdb.meta
-.vs/
-ExportedObj/
-*.csproj
-*.unityproj
-*.sln
-*.suo
-*.tmp
-*.user
-*.userprefs
-*.pidb
-*.booproj
-*.svd
-*.pdb
-*.opendb
-*.VC.db
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# Asset meta files should only be ignored when the corresponding asset is also ignored
-!/[Aa]ssets/**/*.meta
+# Build output
+dist/
+.output/
+build/
+out/
 
-# Crash reports
-crashlytics-build.properties
-fabric.properties
-
-# Android
-*.apk
-*.aab
-*.unitypackage
-
-# iOS
-*.ipa
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Env / secrets
+# Environment
 .env
 .env.local
-*.env
+.env.*.local
 !.env.example
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Cache
+.vite/
+.cache/
+
+# TypeScript
+*.tsbuildinfo
