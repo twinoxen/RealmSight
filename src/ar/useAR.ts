@@ -66,12 +66,20 @@ export function useAR(sceneRef: React.MutableRefObject<SceneManager | null>) {
   }, [setARActive, stopCameraFallback])
 
   const handleTap = useCallback((x: number, y: number) => {
+    console.log('[useAR] handleTap called, mode is:', mode)
     const ar = arRef.current
-    if (!ar) return
+    if (!ar) {
+      console.log('[useAR] handleTap: arRef.current is null')
+      return
+    }
     if (mode === 'webxr') {
+      console.log('[useAR] handleTap: calling placeShape (webxr)')
       ar.placeShape()
     } else if (mode === 'camera-fallback') {
+      console.log('[useAR] handleTap: calling placeShapeAtScreen (camera-fallback)')
       ar.placeShapeAtScreen(x, y)
+    } else {
+      console.log('[useAR] handleTap: mode is none, doing nothing')
     }
   }, [mode])
 
