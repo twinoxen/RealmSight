@@ -2,6 +2,8 @@ export type ARStatus =
   | 'idle'
   | 'starting'
   | 'scanning'
+  | 'scanning-no-surface'
+  | 'scanning-poor-surface'
   | 'surface-found'
   | 'detecting'
   | 'placing'
@@ -24,9 +26,21 @@ const STATUS_CONFIG: Record<
     pulse: true,
   },
   scanning: {
-    label: '🔍 Scanning surface…',
+    label: '🔍 Point at a flat surface',
     color: '#fbbf24',
     bg: 'rgba(251,191,36,0.2)',
+    pulse: true,
+  },
+  'scanning-no-surface': {
+    label: '🔍 Move closer to a flat surface',
+    color: '#fb923c',
+    bg: 'rgba(251,146,60,0.2)',
+    pulse: true,
+  },
+  'scanning-poor-surface': {
+    label: '⚠️ Try a smoother surface — table, paper, floor',
+    color: '#fb923c',
+    bg: 'rgba(251,146,60,0.2)',
     pulse: true,
   },
   'surface-found': {
@@ -35,7 +49,7 @@ const STATUS_CONFIG: Record<
     bg: 'rgba(16,185,129,0.2)',
   },
   detecting: {
-    label: '👁 Looking for glyphs…',
+    label: '👁 Draw a glyph on the surface',
     color: '#a5b4fc',
     bg: 'rgba(99,102,241,0.25)',
     pulse: true,
@@ -45,7 +59,7 @@ const STATUS_CONFIG: Record<
     color: '#f9a8d4',
     bg: 'rgba(236,72,153,0.2)',
   },
-  ready: { label: '🟢 Ready — tap or draw', color: '#34d399', bg: 'rgba(16,185,129,0.2)' },
+  ready: { label: '🟢 Ready — draw or tap', color: '#34d399', bg: 'rgba(16,185,129,0.2)' },
 }
 
 export default function StatusChip({ status, detectedGlyph }: StatusChipProps) {
@@ -70,6 +84,8 @@ export default function StatusChip({ status, detectedGlyph }: StatusChipProps) {
         pointerEvents: 'none',
         transition: 'all 0.3s',
         animation: cfg.pulse ? 'pulse 1.5s ease-in-out infinite' : 'none',
+        maxWidth: 'calc(100vw - 48px)',
+        textAlign: 'center',
       }}
     >
       {label}

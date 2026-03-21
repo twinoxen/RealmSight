@@ -31,10 +31,17 @@ interface PipelineConfig {
   videoRef: React.RefObject<HTMLVideoElement | null>
   modelUrl?: string
   onDetection: (event: DetectionEvent) => void
+  onScanFeedback?: (quality: 'none' | 'poor' | 'ok') => void
   enabled: boolean
 }
 
-export function usePipeline({ videoRef, modelUrl, onDetection, enabled }: PipelineConfig) {
+export function usePipeline({
+  videoRef,
+  modelUrl,
+  onDetection,
+  onScanFeedback,
+  enabled,
+}: PipelineConfig) {
   const { capabilities, setVisionReady, setClassifierReady, setLastDetection } = useAppStore()
   const workerRef = useRef<VisionWorkerClient | null>(null)
   const classifierRef = useRef<GlyphClassifier | null>(null)
@@ -86,6 +93,15 @@ export function usePipeline({ videoRef, modelUrl, onDetection, enabled }: Pipeli
       const imageData = ctx.getImageData(0, 0, W, H)
 
       const contours = await worker.processFrame(imageData)
+
+      // Emit scan quality feedback based on contour count
+      if (onScanFeedback) {
+        const allContours = contours.filter((c: ContourResult) => c.area > 500)
+        if (allContours.length === 0) onScanFeedback('none')
+        else if (allContours.length < 3) onScanFeedback('poor')
+        else onScanFeedback('ok')
+      }
+
       const candidates = contours
         .filter((c: ContourResult) => c.area > 2000 && c.complexity < 500)
         .sort((a: ContourResult, b: ContourResult) => b.area - a.area)
