@@ -17,7 +17,6 @@ export class SceneManager {
   renderer: THREE.WebGLRenderer
   scene: THREE.Scene
   camera: THREE.PerspectiveCamera
-  private animationId: number | null = null
   private clock = new THREE.Clock()
   private controls: OrbitControls | null = null
   private mixers: THREE.AnimationMixer[] = []
