@@ -20,13 +20,14 @@ export function detectCapabilities(): Capabilities {
     try {
       const canvas = document.createElement('canvas')
       return !!canvas.getContext('webgl2')
-    } catch { return false }
+    } catch {
+      return false
+    }
   })()
   const camera = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
   const deviceMemoryGb = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? null
 
-  const qualityTier: QualityTier =
-    (deviceMemoryGb !== null && deviceMemoryGb < 4) ? 'lite' : 'full'
+  const qualityTier: QualityTier = deviceMemoryGb !== null && deviceMemoryGb < 4 ? 'lite' : 'full'
 
   return { webxr, webgl2, camera, deviceMemoryGb, qualityTier, isIOS, isAndroid }
 }

@@ -26,7 +26,7 @@ export class SceneManager {
     // --- Renderer ---
     this.renderer = new THREE.WebGLRenderer({
       antialias: config.quality === 'full',
-      alpha: true,         // transparent background for camera passthrough
+      alpha: true, // transparent background for camera passthrough
       powerPreference: 'high-performance',
     })
     this.renderer.setPixelRatio(
@@ -45,12 +45,7 @@ export class SceneManager {
     this.scene = new THREE.Scene()
 
     // --- Camera ---
-    this.camera = new THREE.PerspectiveCamera(
-      70,
-      window.innerWidth / window.innerHeight,
-      0.01,
-      100
-    )
+    this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100)
     this.camera.position.set(0, 1.6, 2) // standing eye height for desktop preview
 
     // --- Lighting ---
@@ -72,7 +67,9 @@ export class SceneManager {
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
 
     const ktx2Loader = new KTX2Loader()
-    ktx2Loader.setTranscoderPath('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/')
+    ktx2Loader.setTranscoderPath(
+      'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/'
+    )
     ktx2Loader.detectSupport(this.renderer)
 
     this.gltfLoader = new GLTFLoader()
@@ -104,7 +101,11 @@ export class SceneManager {
   }
 
   /** Place a loaded GLTF model at a world position */
-  placeModel(gltf: { scene: THREE.Object3D; animations: THREE.AnimationClip[] }, position: THREE.Vector3, scale = 1) {
+  placeModel(
+    gltf: { scene: THREE.Object3D; animations: THREE.AnimationClip[] },
+    position: THREE.Vector3,
+    scale = 1
+  ) {
     const model = gltf.scene.clone()
     model.position.copy(position)
     model.scale.setScalar(scale)

@@ -25,7 +25,7 @@ export function useGlyphClassifier(modelUrl?: string) {
   }, [modelUrl])
 
   async function classifyContour(imageData: ImageData): Promise<ClassificationResult | null> {
-    const result = await classifierRef.current?.classify(imageData) ?? null
+    const result = (await classifierRef.current?.classify(imageData)) ?? null
     if (result) setLastResult(result)
     return result
   }

@@ -55,7 +55,9 @@ export class GlyphClassifier {
     }
   }
 
-  get isReady() { return this.ready }
+  get isReady() {
+    return this.ready
+  }
 
   /**
    * Classify a contour crop.
@@ -68,19 +70,21 @@ export class GlyphClassifier {
     if (this.useMock) return this.mockClassify()
 
     // Run inference outside tf.tidy so we can return non-Tensor data
-    const tensor = tf.browser.fromPixels(imageData, 1)
+    const tensor = tf.browser
+      .fromPixels(imageData, 1)
       .resizeBilinear([INPUT_SIZE, INPUT_SIZE])
       .toFloat()
       .div(255.0)
       .expandDims(0) as tf.Tensor4D
 
     const output = this.model!.predict(tensor) as tf.Tensor2D
-    const scoreData = await output.data() as Float32Array
+    const scoreData = (await output.data()) as Float32Array
     tensor.dispose()
     output.dispose()
 
-    const results = GLYPH_LABELS.map((label, i) => ({ label, score: scoreData[i] }))
-      .sort((a, b) => b.score - a.score)
+    const results = GLYPH_LABELS.map((label, i) => ({ label, score: scoreData[i] })).sort(
+      (a, b) => b.score - a.score
+    )
 
     const top = results[0]
     if (top.score < CONFIDENCE_THRESHOLD) return null

@@ -34,14 +34,24 @@ declare const cv: Record<string, unknown> & {
   matFromImageData: (imageData: ImageData) => CVMat
   cvtColor: (src: CVMat, dst: CVMat, code: number) => void
   adaptiveThreshold: (
-    src: CVMat, dst: CVMat,
-    maxVal: number, adaptiveMethod: number,
-    thresholdType: number, blockSize: number, C: number
+    src: CVMat,
+    dst: CVMat,
+    maxVal: number,
+    adaptiveMethod: number,
+    thresholdType: number,
+    blockSize: number,
+    C: number
   ) => void
   GaussianBlur: (src: CVMat, dst: CVMat, ksize: unknown, sigmaX: number) => void
   morphologyEx: (src: CVMat, dst: CVMat, op: number, kernel: CVMat) => void
   getStructuringElement: (shape: number, ksize: unknown) => CVMat
-  findContours: (image: CVMat, contours: CVMatVector, hierarchy: CVMat, mode: number, method: number) => void
+  findContours: (
+    image: CVMat,
+    contours: CVMatVector,
+    hierarchy: CVMat,
+    mode: number,
+    method: number
+  ) => void
   contourArea: (contour: CVMat) => number
   arcLength: (contour: CVMat, closed: boolean) => number
   boundingRect: (contour: CVMat) => { x: number; y: number; width: number; height: number }
@@ -83,7 +93,7 @@ let cvReady = false
   onRuntimeInitialized() {
     cvReady = true
     self.postMessage({ type: 'ready' })
-  }
+  },
 }
 
 self.onmessage = (e: MessageEvent) => {
@@ -122,12 +132,13 @@ function extractContours(imageData: ImageData): ContourResult[] {
     const thresh = new cv.Mat()
     mats.push(thresh)
     cv.adaptiveThreshold(
-      blurred, thresh,
+      blurred,
+      thresh,
       255,
       cv.ADAPTIVE_THRESH_GAUSSIAN_C,
       cv.THRESH_BINARY_INV,
-      11,  // blockSize — larger = more context
-      2    // C — constant subtracted from mean
+      11, // blockSize — larger = more context
+      2 // C — constant subtracted from mean
     )
 
     // 4. Morphological close — fills small gaps in drawn lines
@@ -159,7 +170,7 @@ function extractContours(imageData: ImageData): ContourResult[] {
       const m = cv.moments(contour)
       const cx = m.m00 > 0 ? m.m10 / m.m00 : rect.x + rect.width / 2
       const cy = m.m00 > 0 ? m.m01 / m.m00 : rect.y + rect.height / 2
-      const complexity = perimeter * perimeter / (area + 1)
+      const complexity = (perimeter * perimeter) / (area + 1)
 
       results.push({ ...rect, area, cx, cy, complexity })
     }

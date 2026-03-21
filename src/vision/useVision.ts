@@ -33,7 +33,7 @@ export function useVision() {
     try {
       const results = await client.processFrame(imageData)
       setContours(results)
-    } catch (err) {
+    } catch {
       // Worker busy or error — skip frame
     }
   }
