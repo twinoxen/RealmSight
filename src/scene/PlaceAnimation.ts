@@ -135,10 +135,18 @@ export class PlaceAnimationSystem {
     return points
   }
 
-  dispose() {
+  /** Cancel all in-flight animations (e.g. on scene clear) */
+  cancelAll() {
     this.active.forEach(a => {
       if (a.particles) this.scene.remove(a.particles)
+      // Reset the mesh to full scale in case it was mid-animation
+      a.mesh.scale.setScalar(1)
+      a.mesh.position.y = a.targetY
     })
     this.active = []
+  }
+
+  dispose() {
+    this.cancelAll()
   }
 }
