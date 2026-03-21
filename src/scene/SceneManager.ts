@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js'
+import { SurfacePlane } from './SurfacePlane'
 
 interface SceneConfig {
   canvas: HTMLElement
@@ -21,6 +22,7 @@ export class SceneManager {
   private controls: OrbitControls | null = null
   private mixers: THREE.AnimationMixer[] = []
   gltfLoader: GLTFLoader
+  surfacePlane: SurfacePlane
 
   constructor(private config: SceneConfig) {
     // --- Renderer ---
@@ -82,6 +84,9 @@ export class SceneManager {
     this.controls.dampingFactor = 0.05
     this.controls.target.set(0, 0, 0)
 
+    // Surface plane indicator
+    this.surfacePlane = new SurfacePlane(this)
+
     // --- Resize handler ---
     window.addEventListener('resize', this.onResize)
   }
@@ -128,6 +133,7 @@ export class SceneManager {
   private render = () => {
     const delta = this.clock.getDelta()
     this.mixers.forEach(m => m.update(delta))
+    this.surfacePlane?.update(delta)
     this.controls?.update()
     this.renderer.render(this.scene, this.camera)
   }

@@ -32,6 +32,11 @@ export function useAR(sceneRef: React.MutableRefObject<SceneManager | null>) {
     setIsActive(true)
     setARActive(true)
     setArStatus('scanning')
+
+    // For iOS fallback, show estimated surface plane after a brief delay
+    if (!supported) {
+      setTimeout(() => ar.showFallbackSurface(), 1200)
+    }
   }, [sceneRef, setARActive, setArStatus, startCamera])
 
   const stop = useCallback(async () => {

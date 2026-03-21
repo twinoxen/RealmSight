@@ -62,9 +62,10 @@ export default function App() {
     (event: DetectionEvent) => {
       const ar = arHook.arRef?.current
       if (!ar) return
+      // Show surface plane on iOS when we detect any contour
+      ar.showFallbackSurface()
       setArStatus('placing')
       ar.placeGlyphAtNormalized(event.nx, event.ny, event.glyph.label)
-      // Return to detecting after placement
       setTimeout(() => setArStatus('detecting'), 1500)
     },
     [arHook, setArStatus]

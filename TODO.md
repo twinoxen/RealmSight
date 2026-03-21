@@ -22,7 +22,7 @@
 - [x] **Project scaffold** — done (PR #3)
 - [x] **Three.js scene pipeline** — done (PR #4)
 - [x] **WebXR AR session + tap-to-place shapes** — ARSession (WebXR hit-test + reticle), useCameraFallback (iOS), useAR hook, HUD wired with Start/Stop AR + tap handler — WebXR on Android Chrome; iOS camera fallback; tap anywhere to place a colored box/sphere at the hit point; HUD "Start AR" button
-- [ ] **Vercel deploy + device test** — deploy to Vercel, share URL, verify on Android Chrome (WebXR) and iOS Safari (camera fallback)
+- [x] **Vercel deploy + device test** — deployed, loading screen, status chip, surface plane indicator all added — deploy to Vercel, share URL, verify on Android Chrome (WebXR) and iOS Safari (camera fallback)
 
 ---
 
