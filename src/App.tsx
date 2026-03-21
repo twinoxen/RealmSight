@@ -44,7 +44,6 @@ export default function App() {
   useEffect(() => {
     if (isARActive) {
       videoRef.current = document.querySelector('video') as HTMLVideoElement | null
-      setArStatus('scanning')
 
       // Auto-save every 10 seconds
       autoSaveTimer.current = setInterval(async () => {
@@ -61,13 +60,12 @@ export default function App() {
       }, 10000)
     } else {
       videoRef.current = null
-      setArStatus('idle')
       if (autoSaveTimer.current) {
         clearInterval(autoSaveTimer.current)
         autoSaveTimer.current = null
       }
     }
-  }, [isARActive, setArStatus, arHook, saveScene, updateScene])
+  }, [isARActive, saveScene, updateScene, arHook.arRef])
 
   const onDetection = useCallback(
     (event: DetectionEvent) => {
@@ -79,7 +77,7 @@ export default function App() {
       ar.placeGlyphAtNormalized(event.nx, event.ny, event.glyph.label)
       setTimeout(() => setArStatus('detecting'), 1500)
     },
-    [arHook, setArStatus]
+    [arHook.arRef, setArStatus]
   )
 
   usePipeline({
