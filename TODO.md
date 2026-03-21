@@ -46,7 +46,7 @@
 - [ ] **3D model set — 16 glyphs** — Low-poly glTF models for all 16 glyph types; Draco mesh compression + KTX2 textures; LOD0 + LOD1; total core pack ≤ 800KB
 - [ ] **Tier 1 animations** — Ambient loops via Three.js AnimationMixer: chimney smoke (particle system), water flow (shader), flag wave (bone), tree sway; embedded in .glb
 - [x] **Build animation** — spring-scale + rise + particle burst on shape placement via PlaceAnimationSystem — Short place-in animation (blocks assembling / ground rise) on model first placement
-- [ ] **IndexedDB scene save/load** — Dexie.js schema for Scene; save placed models on demand; restore on app reopen; auto-save every 10s
+- [x] **IndexedDB scene save/load** — Dexie.js schema for Scene, auto-save every 10s, exportModels/restoreModels on ARSession — Dexie.js schema for Scene; save placed models on demand; restore on app reopen; auto-save every 10s
 - [ ] **Glyph reference panel** — React slide-up sheet showing all 16 glyphs in responsive grid; drawing tips on tap; renders above WebGL canvas
 - [ ] **iOS surface stabilization** — Transform stabilization for homography-estimated surface plane; reduce model drift on fast device movement
 - [ ] **Public beta URL** — Deploy to Cloudflare Pages or Vercel; share URL for beta testers
