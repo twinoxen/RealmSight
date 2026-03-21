@@ -1,15 +1,17 @@
 import { useCallback } from 'react'
 import { useAppStore } from '@store/appStore'
 import type { SceneManager } from '@scene/SceneManager'
-import { useAR } from '@ar/useAR'
+import type { useAR } from '@ar/useAR'
+import StatusChip from './StatusChip'
 
 interface HUDProps {
   sceneRef: React.MutableRefObject<SceneManager | null>
+  arHook: ReturnType<typeof useAR>
 }
 
-export default function HUD({ sceneRef }: HUDProps) {
-  const { capabilities } = useAppStore()
-  const { mode, isActive, start, stop, handleTap, clear } = useAR(sceneRef)
+export default function HUD({ arHook }: HUDProps) {
+  const { capabilities, visionReady, classifierReady, lastDetection, arStatus } = useAppStore()
+  const { mode, isActive, start, stop, handleTap, clear } = arHook
 
   const onTap = useCallback(
     (e: React.TouchEvent | React.MouseEvent) => {
@@ -19,8 +21,6 @@ export default function HUD({ sceneRef }: HUDProps) {
     },
     [isActive, handleTap]
   )
-
-  const modeLabel = mode === 'webxr' ? 'WebXR AR' : mode === 'camera-fallback' ? 'Camera Mode' : ''
 
   return (
     <div
@@ -46,20 +46,22 @@ export default function HUD({ sceneRef }: HUDProps) {
           paddingTop: 'max(16px, env(safe-area-inset-top))',
         }}
       >
-        {modeLabel && (
+        {/* Mode badge */}
+        {mode !== 'none' && (
           <span
             style={{
-              pointerEvents: 'none',
               background: 'rgba(0,0,0,0.55)',
               padding: '4px 10px',
               borderRadius: 20,
-              fontSize: 12,
-              color: '#fff',
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.6)',
+              pointerEvents: 'none',
             }}
           >
-            {modeLabel}
+            {mode === 'webxr' ? 'WebXR' : 'Camera'}
           </span>
         )}
+
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           {isActive && (
             <button
@@ -98,22 +100,19 @@ export default function HUD({ sceneRef }: HUDProps) {
         </div>
       </div>
 
-      {/* Tap hint */}
-      {isActive && (
-        <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
-          <span
-            style={{
-              background: 'rgba(0,0,0,0.5)',
-              padding: '6px 16px',
-              borderRadius: 20,
-              fontSize: 13,
-              color: '#fff',
-            }}
-          >
-            Tap to place a shape
-          </span>
-        </div>
-      )}
+      {/* Status chip — center */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 8,
+          pointerEvents: 'none',
+          animation: 'fadeIn 0.3s ease',
+        }}
+      >
+        <StatusChip status={arStatus} detectedGlyph={lastDetection?.label} />
+      </div>
 
       {/* Bottom bar */}
       <div
@@ -197,12 +196,7 @@ export default function HUD({ sceneRef }: HUDProps) {
             WebXR: {capabilities.webxr ? '✅' : '❌'} | WebGL2: {capabilities.webgl2 ? '✅' : '❌'}
           </div>
           <div>
-            iOS: {capabilities.isIOS ? '✅' : '❌'} | Android:{' '}
-            {capabilities.isAndroid ? '✅' : '❌'}
-          </div>
-          <div>
-            Quality: {capabilities.qualityTier.toUpperCase()} | RAM:{' '}
-            {capabilities.deviceMemoryGb ?? '?'}GB
+            Vision: {visionReady ? '✅' : '⏳'} | Classifier: {classifierReady ? '✅' : '⏳'}
           </div>
           <div>AR mode: {mode || 'inactive'}</div>
         </div>

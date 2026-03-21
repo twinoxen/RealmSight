@@ -150,4 +150,68 @@ export class ARSession {
     this.placedShapes.forEach(s => this.scene.scene.remove(s))
     this.placedShapes = []
   }
+
+  placeGlyphAtNormalized(nx: number, ny: number, glyphLabel: string) {
+    const raycaster = new THREE.Raycaster()
+    const ndc = new THREE.Vector2(nx * 2 - 1, -(ny * 2 - 1))
+    raycaster.setFromCamera(ndc, this.scene.camera)
+    const cameraDir = new THREE.Vector3()
+    this.scene.camera.getWorldDirection(cameraDir)
+    const planeOrigin = this.scene.camera.position.clone().addScaledVector(cameraDir, 1.2)
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+      cameraDir.clone().negate(),
+      planeOrigin
+    )
+    const target = new THREE.Vector3()
+    if (!raycaster.ray.intersectPlane(plane, target)) {
+      target.copy(raycaster.ray.origin).addScaledVector(raycaster.ray.direction, 1.2)
+    }
+    this.spawnGlyphShape(target, glyphLabel)
+  }
+
+  private spawnGlyphShape(pos: THREE.Vector3, glyphLabel: string) {
+    const colorMap: Record<string, number> = {
+      house: 0x6366f1,
+      castle: 0x8b5cf6,
+      bridge: 0x3b82f6,
+      road: 0x6b7280,
+      river: 0x06b6d4,
+      tree: 0x10b981,
+      mountain: 0x64748b,
+      temple: 0xf59e0b,
+    }
+    const color = colorMap[glyphLabel] ?? 0xffffff
+    let geo: THREE.BufferGeometry
+    switch (glyphLabel) {
+      case 'house':
+        geo = new THREE.ConeGeometry(0.07, 0.12, 4)
+        break
+      case 'castle':
+        geo = new THREE.BoxGeometry(0.1, 0.15, 0.1)
+        break
+      case 'bridge':
+        geo = new THREE.TorusGeometry(0.06, 0.02, 8, 16, Math.PI)
+        break
+      case 'river':
+        geo = new THREE.CylinderGeometry(0.02, 0.02, 0.2, 8)
+        break
+      case 'tree':
+        geo = new THREE.ConeGeometry(0.06, 0.14, 6)
+        break
+      case 'mountain':
+        geo = new THREE.ConeGeometry(0.08, 0.16, 3)
+        break
+      case 'temple':
+        geo = new THREE.BoxGeometry(0.08, 0.14, 0.08)
+        break
+      default:
+        geo = new THREE.SphereGeometry(0.06, 16, 16)
+    }
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.2 })
+    const mesh = new THREE.Mesh(geo, mat)
+    mesh.position.copy(pos)
+    mesh.castShadow = true
+    this.scene.scene.add(mesh)
+    this.placedShapes.push(mesh)
+  }
 }
