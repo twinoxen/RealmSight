@@ -6,6 +6,7 @@ import { usePipeline } from '@vision/usePipeline'
 import { useAR } from '@ar/useAR'
 import HUD from '@ui/HUD'
 import LoadingScreen from '@ui/LoadingScreen'
+import PWAInstallBanner from '@pwa/PWAInstallBanner'
 import type { DetectionEvent } from '@vision/usePipeline'
 
 const CANVAS_ID = 'canvas-mount'
@@ -103,6 +104,7 @@ export default function App() {
     >
       <div id={CANVAS_ID} style={{ position: 'absolute', inset: 0 }} />
       {capabilities && appReady && <HUD sceneRef={sceneRef} arHook={arHook} />}
+      {capabilities && appReady && <PWAInstallBanner />}
       {!appReady && <LoadingScreen stage={loadingScreenStage} />}
     </div>
   )
