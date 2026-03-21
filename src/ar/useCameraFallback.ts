@@ -44,6 +44,7 @@ export function useCameraFallback() {
       'object-fit:cover',
       'z-index:1',        // Behind canvas but above body
       'background:#000',
+      'pointer-events:none', // Let taps pass through to HUD overlay
     ].join(';')
     document.body.prepend(video)
     videoRef.current = video
