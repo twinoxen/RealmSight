@@ -13,12 +13,17 @@ interface HUDProps {
   onClearBg?: () => void
 }
 
+/** Prevents touches on interactive elements from propagating to the scene tap handler */
+function stopTouch(e: React.TouchEvent) {
+  e.stopPropagation()
+}
+
 export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps) {
   const { capabilities, visionReady, classifierReady, lastDetection, arStatus } = useAppStore()
   const { mode, isActive, start, stop, handleTap, clear, needsOrientationPermission } = arHook
   const [glyphPanelOpen, setGlyphPanelOpen] = useState(false)
 
-  const onTap = useCallback(
+  const onSceneTap = useCallback(
     (e: React.TouchEvent | React.MouseEvent) => {
       if (!isActive) return
       const { clientX, clientY } = 'touches' in e ? (e.changedTouches[0] ?? e.touches[0]) : e
@@ -28,14 +33,20 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
   )
 
   const handleStart = useCallback(() => {
-    // On iOS 13+, DeviceOrientationEvent.requestPermission must be called from a user gesture
-    // We call it here before starting AR so the stabilization hook can use it
     const dev = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
     if (needsOrientationPermission && typeof dev.requestPermission === 'function') {
       dev.requestPermission().catch(() => {})
     }
     start()
   }, [start, needsOrientationPermission])
+
+  const btnStyle = (extra?: React.CSSProperties): React.CSSProperties => ({
+    pointerEvents: 'all',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#fff',
+    ...extra,
+  })
 
   return (
     <div
@@ -48,8 +59,8 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
         justifyContent: 'space-between',
         zIndex: 3,
       }}
-      onTouchStart={onTap}
-      onClick={onTap}
+      onTouchStart={onSceneTap}
+      onClick={onSceneTap}
     >
       {/* Top bar */}
       <div
@@ -60,8 +71,9 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
           padding: '16px',
           paddingTop: 'max(16px, env(safe-area-inset-top))',
         }}
+        onTouchStart={stopTouch}
+        onClick={e => e.stopPropagation()}
       >
-        {/* Mode badge */}
         {mode !== 'none' && (
           <span
             style={{
@@ -70,7 +82,6 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
               borderRadius: 20,
               fontSize: 11,
               color: 'rgba(255,255,255,0.6)',
-              pointerEvents: 'none',
             }}
           >
             {mode === 'webxr' ? 'WebXR' : 'Camera'}
@@ -78,64 +89,47 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
         )}
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          {isActive && (
-            <>
-              {onCaptureBg && (
-                <button
-                  style={{
-                    pointerEvents: 'all',
-                    background: hasBg ? 'rgba(16,185,129,0.4)' : 'rgba(99,102,241,0.4)',
-                    border: `1px solid ${hasBg ? 'rgba(16,185,129,0.6)' : 'rgba(99,102,241,0.5)'}`,
-                    borderRadius: 20,
-                    padding: '6px 12px',
-                    color: '#fff',
-                    fontSize: 12,
-                    fontWeight: 600,
-                  }}
-                  onClick={e => {
-                    e.stopPropagation()
-                    if (hasBg && onClearBg) onClearBg()
-                    else onCaptureBg()
-                  }}
-                  title={
-                    hasBg
-                      ? 'Background locked — tap to reset'
-                      : 'Lock current view as background to detect drawn marks'
-                  }
-                >
-                  {hasBg ? '✅ BG' : '📷 Set BG'}
-                </button>
-              )}
-              <button
-                style={{
-                  pointerEvents: 'all',
-                  background: 'rgba(0,0,0,0.5)',
-                  border: 'none',
-                  borderRadius: 20,
-                  padding: '6px 14px',
-                  color: '#fff',
-                  fontSize: 13,
-                }}
-                onClick={e => {
-                  e.stopPropagation()
-                  clear()
-                }}
-              >
-                Clear
-              </button>
-            </>
+          {isActive && onCaptureBg && (
+            <button
+              style={btnStyle({
+                background: hasBg ? 'rgba(16,185,129,0.4)' : 'rgba(99,102,241,0.4)',
+                border: `1px solid ${hasBg ? 'rgba(16,185,129,0.6)' : 'rgba(99,102,241,0.5)'}`,
+                borderRadius: 20,
+                padding: '6px 12px',
+                fontSize: 12,
+                fontWeight: 600,
+              })}
+              onClick={() => {
+                if (hasBg && onClearBg) onClearBg()
+                else onCaptureBg()
+              }}
+            >
+              {hasBg ? '✅ BG' : '📷 Set BG'}
+            </button>
           )}
+
+          {isActive && (
+            <button
+              style={btnStyle({
+                background: 'rgba(0,0,0,0.5)',
+                borderRadius: 20,
+                padding: '6px 14px',
+                fontSize: 13,
+              })}
+              onClick={clear}
+            >
+              Clear
+            </button>
+          )}
+
           <button
-            style={{
-              pointerEvents: 'all',
+            style={btnStyle({
               background: 'rgba(0,0,0,0.5)',
-              border: 'none',
               borderRadius: '50%',
               width: 44,
               height: 44,
-              color: '#fff',
               fontSize: 20,
-            }}
+            })}
             aria-label="Settings"
           >
             ⚙
@@ -149,7 +143,6 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 8,
           pointerEvents: 'none',
           animation: 'fadeIn 0.3s ease',
         }}
@@ -166,58 +159,44 @@ export default function HUD({ arHook, hasBg, onCaptureBg, onClearBg }: HUDProps)
           padding: '24px 16px',
           paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
         }}
+        onTouchStart={stopTouch}
+        onClick={e => e.stopPropagation()}
       >
         <button
-          style={{
-            pointerEvents: 'all',
+          style={btnStyle({
             background: glyphPanelOpen ? 'rgba(99,102,241,0.5)' : 'rgba(0,0,0,0.5)',
-            border: 'none',
             borderRadius: '50%',
             width: 44,
             height: 44,
-            color: '#fff',
             fontSize: 20,
-          }}
+          })}
           aria-label="Glyph Reference"
-          onClick={e => {
-            e.stopPropagation()
-            setGlyphPanelOpen(v => !v)
-          }}
+          onClick={() => setGlyphPanelOpen(v => !v)}
         >
           📖
         </button>
 
         <button
-          style={{
-            pointerEvents: 'all',
+          style={btnStyle({
             background: isActive ? 'rgba(239,68,68,0.85)' : 'rgba(99,102,241,0.9)',
-            border: 'none',
             borderRadius: 32,
             padding: '14px 28px',
-            color: '#fff',
             fontSize: 16,
             fontWeight: 600,
-          }}
-          onClick={e => {
-            e.stopPropagation()
-            if (isActive) stop()
-            else handleStart()
-          }}
+          })}
+          onClick={() => (isActive ? stop() : handleStart())}
         >
           {isActive ? 'Stop AR' : 'Start AR'}
         </button>
 
         <button
-          style={{
-            pointerEvents: 'all',
+          style={btnStyle({
             background: 'rgba(0,0,0,0.5)',
-            border: 'none',
             borderRadius: '50%',
             width: 44,
             height: 44,
-            color: '#fff',
             fontSize: 20,
-          }}
+          })}
           aria-label="Share"
         >
           🔗
