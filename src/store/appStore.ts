@@ -16,15 +16,15 @@ interface AppState {
   setLastDetection: (result: ClassificationResult | null) => void
 }
 
-export const useAppStore = create<AppState>((set) => ({
+export const useAppStore = create<AppState>(set => ({
   capabilities: null,
-  setCapabilities: (capabilities) => set({ capabilities }),
+  setCapabilities: capabilities => set({ capabilities }),
   isARActive: false,
-  setARActive: (isARActive) => set({ isARActive }),
+  setARActive: isARActive => set({ isARActive }),
   visionReady: false,
-  setVisionReady: (visionReady) => set({ visionReady }),
+  setVisionReady: visionReady => set({ visionReady }),
   classifierReady: false,
-  setClassifierReady: (classifierReady) => set({ classifierReady }),
+  setClassifierReady: classifierReady => set({ classifierReady }),
   lastDetection: null,
-  setLastDetection: (lastDetection) => set({ lastDetection }),
+  setLastDetection: lastDetection => set({ lastDetection }),
 }))

@@ -16,7 +16,7 @@ export class VisionWorkerClient {
     // Vite worker syntax — bundled as a separate chunk
     this.worker = new Worker(new URL('./opencv.worker.ts', import.meta.url), { type: 'module' })
     this.worker.onmessage = this.handleMessage
-    this.worker.onerror = (e) => console.error('[VisionWorker] Error:', e.message)
+    this.worker.onerror = e => console.error('[VisionWorker] Error:', e.message)
   }
 
   private handleMessage = (e: MessageEvent<WorkerMessage>) => {
@@ -39,7 +39,9 @@ export class VisionWorkerClient {
     }
   }
 
-  get isReady() { return this.ready }
+  get isReady() {
+    return this.ready
+  }
 
   /** Process a video frame and return detected contours */
   async processFrame(imageData: ImageData): Promise<ContourResult[]> {
