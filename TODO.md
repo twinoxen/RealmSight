@@ -12,6 +12,20 @@
 
 ---
 
+## 🎯 MVP Milestone — Testable on Device (Do This First)
+
+> Goal: deploy to Vercel and test on a real phone ASAP. No glyph recognition yet.
+> Android: tap surface → colored 3D shape appears at hit-test point.
+> iOS: tap screen → colored 3D shape appears on estimated surface.
+> When this works end-to-end on device, resume Phase 1 tasks.
+
+- [x] **Project scaffold** — done (PR #3)
+- [x] **Three.js scene pipeline** — done (PR #4)
+- [x] **WebXR AR session + tap-to-place shapes** — ARSession (WebXR hit-test + reticle), useCameraFallback (iOS), useAR hook, HUD wired with Start/Stop AR + tap handler — WebXR on Android Chrome; iOS camera fallback; tap anywhere to place a colored box/sphere at the hit point; HUD "Start AR" button
+- [ ] **Vercel deploy + device test** — deploy to Vercel, share URL, verify on Android Chrome (WebXR) and iOS Safari (camera fallback)
+
+---
+
 ## Phase 1 — Foundation (Months 1–3)
 
 - [x] **Project scaffold** — Vite + React + TypeScript, pnpm, path aliases, ESLint, PWA plugin, capability detection, Zustand store, HUD shell — Vite + React + TypeScript project, pnpm workspace, ESLint/Prettier config, path aliases, GitHub Actions CI (lint + typecheck on PR)
