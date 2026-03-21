@@ -10,8 +10,8 @@ export function useAR(sceneRef: React.MutableRefObject<SceneManager | null>) {
   const [mode, setMode] = useState<'webxr' | 'camera-fallback' | 'none'>('none')
   const [isActive, setIsActive] = useState(false)
 
-  // iOS camera fallback — activates when in camera-fallback mode
-  useCameraFallback(mode === 'camera-fallback')
+  // Returns start/stop methods rather than reacting via effect
+  const { start: startCameraFallback, stop: stopCameraFallback } = useCameraFallback()
 
   const start = useCallback(async () => {
     const scene = sceneRef.current
@@ -20,26 +20,50 @@ export function useAR(sceneRef: React.MutableRefObject<SceneManager | null>) {
     const ar = new ARSession(scene)
     arRef.current = ar
 
+    // Fast synchronous check to skip async gap if WebXR is definitely absent (iOS Chrome/Safari)
+    // This preserves the synchronous gesture chain for getUserMedia
+    if (!navigator.xr) {
+      try {
+        await startCameraFallback()
+        setMode('camera-fallback')
+        setIsActive(true)
+        setARActive(true)
+      } catch (err) {
+        console.error("Camera start failed", err)
+      }
+      return
+    }
+
+    // If xr exists, we need to check if immersive-ar is supported (Android/Quest etc)
     const supported = await ARSession.isSupported()
     if (supported) {
       await ar.startWebXR()
       setMode('webxr')
     } else {
-      // iOS / unsupported: camera fallback
-      setMode('camera-fallback')
+      // Fallback if supported is false despite navigator.xr being present
+      try {
+        await startCameraFallback()
+        setMode('camera-fallback')
+      } catch (err) {
+        console.error("Camera fallback start failed", err)
+      }
     }
 
     setIsActive(true)
     setARActive(true)
-  }, [sceneRef, setARActive])
+  }, [sceneRef, setARActive, startCameraFallback])
 
   const stop = useCallback(async () => {
     await arRef.current?.stop()
     arRef.current = null
+    
+    // Stop camera fallback if it was active
+    stopCameraFallback()
+
     setMode('none')
     setIsActive(false)
     setARActive(false)
-  }, [setARActive])
+  }, [setARActive, stopCameraFallback])
 
   const handleTap = useCallback((x: number, y: number) => {
     const ar = arRef.current

@@ -21,7 +21,7 @@ export default function HUD({ sceneRef }: HUDProps) {
 
   return (
     <div
-      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', zIndex: 3 }}
       onTouchStart={onTap}
       onClick={onTap}
     >
