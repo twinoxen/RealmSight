@@ -1,8 +1,9 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useAppStore } from '@store/appStore'
 import type { SceneManager } from '@scene/SceneManager'
 import type { useAR } from '@ar/useAR'
 import StatusChip from './StatusChip'
+import GlyphReferencePanel from './GlyphReferencePanel'
 
 interface HUDProps {
   sceneRef: React.MutableRefObject<SceneManager | null>
@@ -12,6 +13,7 @@ interface HUDProps {
 export default function HUD({ arHook }: HUDProps) {
   const { capabilities, visionReady, classifierReady, lastDetection, arStatus } = useAppStore()
   const { mode, isActive, start, stop, handleTap, clear } = arHook
+  const [glyphPanelOpen, setGlyphPanelOpen] = useState(false)
 
   const onTap = useCallback(
     (e: React.TouchEvent | React.MouseEvent) => {
@@ -127,7 +129,7 @@ export default function HUD({ arHook }: HUDProps) {
         <button
           style={{
             pointerEvents: 'all',
-            background: 'rgba(0,0,0,0.5)',
+            background: glyphPanelOpen ? 'rgba(99,102,241,0.5)' : 'rgba(0,0,0,0.5)',
             border: 'none',
             borderRadius: '50%',
             width: 44,
@@ -136,6 +138,10 @@ export default function HUD({ arHook }: HUDProps) {
             fontSize: 20,
           }}
           aria-label="Glyph Reference"
+          onClick={e => {
+            e.stopPropagation()
+            setGlyphPanelOpen(v => !v)
+          }}
         >
           📖
         </button>
@@ -176,6 +182,9 @@ export default function HUD({ arHook }: HUDProps) {
           🔗
         </button>
       </div>
+
+      {/* Glyph reference panel */}
+      <GlyphReferencePanel isOpen={glyphPanelOpen} onClose={() => setGlyphPanelOpen(false)} />
 
       {/* Dev badge */}
       {import.meta.env.DEV && capabilities && (
