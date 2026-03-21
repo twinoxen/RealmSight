@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/*.png'],
+      includeAssets: ['favicon.svg', 'icons/*.svg', 'icons/*.png'],
       manifest: {
         name: 'RealmSight',
         short_name: 'RealmSight',
@@ -18,23 +18,63 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
+        scope: '/',
+        categories: ['games', 'entertainment', 'education'],
         icons: [
-          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-        ]
+          {
+            src: 'icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+        ],
+        screenshots: [],
+      },
+      devOptions: {
+        enabled: false, // disable SW in dev to avoid caching headaches
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB — TF.js bundle is ~2.4MB
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB for TF.js bundle
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Don't precache large model files — use runtime cache instead
+        globIgnores: ['**/*.glb', '**/opencv.js'],
         runtimeCaching: [
           {
+            // glTF models: cache-first, 30-day expiry
             urlPattern: /\/models\/.+\.glb$/,
             handler: 'CacheFirst',
-            options: { cacheName: 'gltf-models', expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 * 30 } }
-          }
-        ]
-      }
-    })
+            options: {
+              cacheName: 'gltf-models',
+              expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            // OpenCV.js from CDN: cache-first (large, rarely changes)
+            urlPattern: /docs\.opencv\.org\/.+\/opencv\.js$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'opencv-wasm',
+              expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 90 },
+            },
+          },
+          {
+            // Draco decoder from Google CDN
+            urlPattern: /www\.gstatic\.com\/draco\/.+/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'draco-decoder',
+              expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 90 },
+            },
+          },
+        ],
+      },
+    }),
   ],
   resolve: {
     alias: {
@@ -47,6 +87,6 @@ export default defineConfig({
       '@db': fileURLToPath(new URL('src/db', import.meta.url)),
       '@pwa': fileURLToPath(new URL('src/pwa', import.meta.url)),
       '@platform': fileURLToPath(new URL('src/platform', import.meta.url)),
-    }
-  }
+    },
+  },
 })

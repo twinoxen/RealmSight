@@ -35,8 +35,8 @@
 - [x] **OpenCV.js Web Worker** — Worker loads OpenCV WASM, implements adaptive threshold + Gaussian blur + morphological close + contour extraction; VisionWorkerClient bridges main thread; useVision hook manages lifecycle — Load OpenCV WASM in a dedicated Web Worker; implement adaptive thresholding + contour extraction pipeline; postMessage result to main thread
 - [x] **TF.js glyph classifier — 8 core glyphs** — GlyphClassifier loads TF.js LayersModel, warms up, classifies 64x64 contour crops; mock mode for dev before training data exists; useGlyphClassifier hook; Zustand vision state — Train MobileNet-derived CNN on House, Castle, Bridge, Road, River, Tree, Mountain, Temple; export to TF.js format; wire into Web Worker inference pipeline; target ≥85% confidence
 - [x] **Static model placement** — full vision pipeline wired: camera frame → OpenCV Worker → TF.js classifier → placeGlyphAtNormalized(); glyph-specific shapes and colors; detection badge in HUD — Load a placeholder .glb via Three.js GLTFLoader (Draco + KTX2); place at recognized glyph world position; scale from bounding box; confirm on Android WebXR and iOS fallback
-- [ ] **PWA shell + Service Worker** — Web app manifest, Service Worker with stale-while-revalidate caching, offline-first after first load; cache budget: ~8MB total
-- [ ] **Platform feature detection** — Capability matrix at startup: WebXR support, WebGL2, camera access, device memory; quality tier (Full/Lite) auto-set; stored in Zustand
+- [x] **PWA shell + Service Worker** — Workbox config with runtime caching for GLTFs, OpenCV CDN, Draco decoder; install banner; favicon; SW disabled in dev — Web app manifest, Service Worker with stale-while-revalidate caching, offline-first after first load; cache budget: ~8MB total
+- [x] **Platform feature detection** — capabilities.ts detects WebXR, WebGL2, camera, device RAM, iOS/Android; Full/Lite quality tier; stored in Zustand — Capability matrix at startup: WebXR support, WebGL2, camera access, device memory; quality tier (Full/Lite) auto-set; stored in Zustand
 
 ---
 
