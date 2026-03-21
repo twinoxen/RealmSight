@@ -13,16 +13,8 @@ import type { DetectionEvent } from '@vision/usePipeline'
 const CANVAS_ID = 'canvas-mount'
 
 export default function App() {
-  const {
-    capabilities,
-    setCapabilities,
-    isARActive,
-    loadingStage,
-    setLoadingStage,
-    setArStatus,
-    visionReady,
-    classifierReady,
-  } = useAppStore()
+  const { capabilities, setCapabilities, isARActive, loadingStage, setLoadingStage, setArStatus } =
+    useAppStore()
 
   const sceneRef = useScene(CANVAS_ID)
   const arHook = useAR(sceneRef)
@@ -32,25 +24,21 @@ export default function App() {
   const currentSceneId = useRef<number | null>(null)
   const autoSaveTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Stage 1: detect capabilities (fast — sync)
+  // Boot: detect capabilities then show app after a brief init delay
+  // Vision worker & classifier boot lazily when AR starts — don't block on them
   useEffect(() => {
     const caps = detectCapabilities()
     setCapabilities(caps)
-    setLoadingStage('vision') // move to next stage immediately
-  }, [setCapabilities, setLoadingStage])
+    setLoadingStage('vision')
 
-  // Stage 2+3: vision worker + classifier loading
-  useEffect(() => {
-    if (visionReady) setLoadingStage('classifier')
-  }, [visionReady, setLoadingStage])
-
-  useEffect(() => {
-    if (classifierReady) {
+    // Give Three.js + scene a moment to init, then show the app
+    const timer = setTimeout(() => {
       setLoadingStage('done')
-      // Brief delay so user sees "done" state
-      setTimeout(() => setAppReady(true), 400)
-    }
-  }, [classifierReady, setLoadingStage])
+      setAppReady(true)
+    }, 800)
+
+    return () => clearTimeout(timer)
+  }, [setCapabilities, setLoadingStage])
 
   // Point videoRef at the camera element when AR is active
   useEffect(() => {
@@ -104,15 +92,7 @@ export default function App() {
     ;(window as Window & { __scene?: typeof sceneRef }).__scene = sceneRef
   }
 
-  // Map loading stage to LoadingScreen stage prop
-  const loadingScreenStage =
-    loadingStage === 'done'
-      ? 'classifier'
-      : loadingStage === 'classifier'
-        ? 'classifier'
-        : loadingStage === 'vision'
-          ? 'vision'
-          : 'app'
+  const loadingScreenStage = loadingStage === 'vision' ? 'vision' : 'app'
 
   return (
     <div
