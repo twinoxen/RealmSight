@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { ARSession } from './ARSession'
 import { useCameraFallback } from './useCameraFallback'
 import { useAppStore } from '@store/appStore'
 import type { SceneManager } from '@scene/SceneManager'
 
 export function useAR(sceneRef: React.MutableRefObject<SceneManager | null>) {
-  const { capabilities, setARActive } = useAppStore()
+  const { setARActive } = useAppStore()
   const arRef = useRef<ARSession | null>(null)
   const [mode, setMode] = useState<'webxr' | 'camera-fallback' | 'none'>('none')
   const [isActive, setIsActive] = useState(false)
