@@ -122,6 +122,7 @@ export class ARSession {
 
     this.scene.scene.add(mesh)
     this.placedShapes.push(mesh)
+    this.scene.placeAnim.play(mesh)
   }
 
   private xrRenderLoop = (_: number, frame: XRFrame | null) => {
@@ -233,5 +234,6 @@ export class ARSession {
     mesh.castShadow = true
     this.scene.scene.add(mesh)
     this.placedShapes.push(mesh)
+    this.scene.placeAnim.play(mesh)
   }
 }
