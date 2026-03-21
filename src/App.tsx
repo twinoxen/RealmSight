@@ -9,6 +9,7 @@ import LoadingScreen from '@ui/LoadingScreen'
 import CapabilitiesScreen from '@ui/CapabilitiesScreen'
 import PWAInstallBanner from '@pwa/PWAInstallBanner'
 import { useSceneDB } from '@db/useSceneDB'
+import { useHomographyTracking } from '@ar/useHomographyTracking'
 import type { DetectionEvent } from '@vision/usePipeline'
 
 const CANVAS_ID = 'canvas-mount'
@@ -108,7 +109,7 @@ export default function App() {
     [arStatus, setArStatus]
   )
 
-  const { clearBackground } = usePipeline({
+  const { clearBackground, backgroundRef } = usePipeline({
     videoRef,
     enabled: isARActive && arHook.mode === 'camera-fallback',
     onDetection,
@@ -130,6 +131,14 @@ export default function App() {
     clearBackground()
     setHasBg(false)
   }, [clearBackground])
+
+  // Homography-based world anchoring for iOS camera fallback
+  useHomographyTracking({
+    sceneRef,
+    backgroundRef,
+    videoRef,
+    enabled: isARActive && arHook.mode === 'camera-fallback' && hasBg,
+  })
 
   if (import.meta.env.DEV) {
     ;(window as Window & { __scene?: typeof sceneRef }).__scene = sceneRef
