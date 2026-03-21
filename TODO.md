@@ -30,8 +30,8 @@
 
 - [x] **Project scaffold** — Vite + React + TypeScript, pnpm, path aliases, ESLint, PWA plugin, capability detection, Zustand store, HUD shell — Vite + React + TypeScript project, pnpm workspace, ESLint/Prettier config, path aliases, GitHub Actions CI (lint + typecheck on PR)
 - [x] **Three.js scene pipeline** — SceneManager (renderer, scene, camera, lights, Draco+KTX2 loader, AnimationMixer, OrbitControls), useScene hook ties lifecycle to React component — Bootstrap Three.js scene: WebGL renderer, camera, scene graph, render loop, resize handling, basic orbit controls for desktop preview
-- [ ] **WebXR AR session** — Detect WebXR immersive-ar support; start/stop XR session on Android Chrome; integrate XRReferenceSpace, hit-test, plane detection; fall through to fallback if unsupported
-- [ ] **iOS camera fallback** — getUserMedia rear camera feed; canvas compositing to overlay Three.js scene on camera frame; OpenCV.js homography surface estimation
+- [x] **WebXR AR session** — Detect WebXR immersive-ar support; start/stop XR session on Android Chrome; integrate XRReferenceSpace, hit-test, plane detection; fall through to fallback if unsupported
+- [x] **iOS camera fallback** — getUserMedia rear camera feed; canvas compositing to overlay Three.js scene on camera frame; OpenCV.js homography surface estimation
 - [x] **OpenCV.js Web Worker** — Worker loads OpenCV WASM, implements adaptive threshold + Gaussian blur + morphological close + contour extraction; VisionWorkerClient bridges main thread; useVision hook manages lifecycle — Load OpenCV WASM in a dedicated Web Worker; implement adaptive thresholding + contour extraction pipeline; postMessage result to main thread
 - [x] **TF.js glyph classifier — 8 core glyphs** — GlyphClassifier loads TF.js LayersModel, warms up, classifies 64x64 contour crops; mock mode for dev before training data exists; useGlyphClassifier hook; Zustand vision state — Train MobileNet-derived CNN on House, Castle, Bridge, Road, River, Tree, Mountain, Temple; export to TF.js format; wire into Web Worker inference pipeline; target ≥85% confidence
 - [x] **Static model placement** — full vision pipeline wired: camera frame → OpenCV Worker → TF.js classifier → placeGlyphAtNormalized(); glyph-specific shapes and colors; detection badge in HUD — Load a placeholder .glb via Three.js GLTFLoader (Draco + KTX2); place at recognized glyph world position; scale from bounding box; confirm on Android WebXR and iOS fallback
@@ -48,7 +48,7 @@
 - [x] **Build animation** — spring-scale + rise + particle burst on shape placement via PlaceAnimationSystem — Short place-in animation (blocks assembling / ground rise) on model first placement
 - [x] **IndexedDB scene save/load** — Dexie.js schema for Scene, auto-save every 10s, exportModels/restoreModels on ARSession — Dexie.js schema for Scene; save placed models on demand; restore on app reopen; auto-save every 10s
 - [x] **Glyph reference panel** — slide-up sheet with 4-col glyph grid, drawing tips on tap, 📖 button wired in HUD — React slide-up sheet showing all 16 glyphs in responsive grid; drawing tips on tap; renders above WebGL canvas
-- [ ] **iOS surface stabilization** — Transform stabilization for homography-estimated surface plane; reduce model drift on fast device movement
+- [x] **iOS surface stabilization** — added DeviceOrientation stabilization fallback on iOS to keep shapes planted when tilting the phone — Transform stabilization for homography-estimated surface plane; reduce model drift on fast device movement
 - [ ] **Public beta URL** — Deploy to Cloudflare Pages or Vercel; share URL for beta testers
 
 ---
