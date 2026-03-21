@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js'
 import { SurfacePlane } from './SurfacePlane'
+import { PlaceAnimationSystem } from './PlaceAnimation'
 
 interface SceneConfig {
   canvas: HTMLElement
@@ -23,6 +24,7 @@ export class SceneManager {
   private mixers: THREE.AnimationMixer[] = []
   gltfLoader: GLTFLoader
   surfacePlane: SurfacePlane
+  placeAnim: PlaceAnimationSystem
 
   constructor(private config: SceneConfig) {
     // --- Renderer ---
@@ -87,6 +89,9 @@ export class SceneManager {
     // Surface plane indicator
     this.surfacePlane = new SurfacePlane(this)
 
+    // Place-in animation system
+    this.placeAnim = new PlaceAnimationSystem(this.scene)
+
     // --- Resize handler ---
     window.addEventListener('resize', this.onResize)
   }
@@ -134,6 +139,7 @@ export class SceneManager {
     const delta = this.clock.getDelta()
     this.mixers.forEach(m => m.update(delta))
     this.surfacePlane?.update(delta)
+    this.placeAnim?.update(delta)
     this.controls?.update()
     this.renderer.render(this.scene, this.camera)
   }

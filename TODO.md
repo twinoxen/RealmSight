@@ -45,7 +45,7 @@
 - [ ] **Glyph classifier v2 — full 16 glyphs** — Add Camp, Dock, Ruins, Tower, Farm, Mine, Gate + 1 spare; retrain and re-export; re-validate 85% threshold
 - [ ] **3D model set — 16 glyphs** — Low-poly glTF models for all 16 glyph types; Draco mesh compression + KTX2 textures; LOD0 + LOD1; total core pack ≤ 800KB
 - [ ] **Tier 1 animations** — Ambient loops via Three.js AnimationMixer: chimney smoke (particle system), water flow (shader), flag wave (bone), tree sway; embedded in .glb
-- [ ] **Build animation** — Short place-in animation (blocks assembling / ground rise) on model first placement
+- [x] **Build animation** — spring-scale + rise + particle burst on shape placement via PlaceAnimationSystem — Short place-in animation (blocks assembling / ground rise) on model first placement
 - [ ] **IndexedDB scene save/load** — Dexie.js schema for Scene; save placed models on demand; restore on app reopen; auto-save every 10s
 - [ ] **Glyph reference panel** — React slide-up sheet showing all 16 glyphs in responsive grid; drawing tips on tap; renders above WebGL canvas
 - [ ] **iOS surface stabilization** — Transform stabilization for homography-estimated surface plane; reduce model drift on fast device movement
