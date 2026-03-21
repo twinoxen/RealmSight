@@ -20,7 +20,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100dvh', overflow: 'hidden', background: '#000', position: 'relative' }}>
+    <div style={{ width: '100vw', height: '100dvh', overflow: 'hidden', background: 'transparent', position: 'relative' }}>
       <div id={CANVAS_ID} style={{ position: 'absolute', inset: 0 }} />
       {capabilities && <HUD sceneRef={sceneRef} />}
     </div>
