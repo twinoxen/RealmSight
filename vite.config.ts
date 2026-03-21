@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import path from 'path'
+import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [
@@ -37,15 +37,15 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@ar': path.resolve(__dirname, 'src/ar'),
-      '@vision': path.resolve(__dirname, 'src/vision'),
-      '@scene': path.resolve(__dirname, 'src/scene'),
-      '@ui': path.resolve(__dirname, 'src/ui'),
-      '@multiplayer': path.resolve(__dirname, 'src/multiplayer'),
-      '@store': path.resolve(__dirname, 'src/store'),
-      '@db': path.resolve(__dirname, 'src/db'),
-      '@pwa': path.resolve(__dirname, 'src/pwa'),
-      '@platform': path.resolve(__dirname, 'src/platform'),
+      '@ar': fileURLToPath(new URL('src/ar', import.meta.url)),
+      '@vision': fileURLToPath(new URL('src/vision', import.meta.url)),
+      '@scene': fileURLToPath(new URL('src/scene', import.meta.url)),
+      '@ui': fileURLToPath(new URL('src/ui', import.meta.url)),
+      '@multiplayer': fileURLToPath(new URL('src/multiplayer', import.meta.url)),
+      '@store': fileURLToPath(new URL('src/store', import.meta.url)),
+      '@db': fileURLToPath(new URL('src/db', import.meta.url)),
+      '@pwa': fileURLToPath(new URL('src/pwa', import.meta.url)),
+      '@platform': fileURLToPath(new URL('src/platform', import.meta.url)),
     }
   }
 })
