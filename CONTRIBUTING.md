@@ -29,12 +29,3 @@ What changed and where?
 ## Testing
 How to verify it works.
 ```
-
-## Commit Style
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
-- `feat:` new feature
-- `fix:` bug fix
-- `docs:` documentation
-- `chore:` maintenance
-- `refactor:` code change with no behavior change
