@@ -1,9 +1,11 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { VisionWorkerClient } from './VisionWorkerClient'
 import { GlyphClassifier } from './GlyphClassifier'
+import { subtractBackground } from './bgSubtract'
 import { useAppStore } from '@store/appStore'
 import type { ContourResult } from './opencv.worker'
 import type { ClassificationResult } from './GlyphClassifier'
+import type { BackgroundFrame } from './bgSubtract'
 
 export interface DetectionEvent {
   glyph: ClassificationResult
@@ -33,6 +35,9 @@ interface PipelineConfig {
   onDetection: (event: DetectionEvent) => void
   onScanFeedback?: (quality: 'none' | 'poor' | 'ok') => void
   enabled: boolean
+  /** When true, captures the next frame as the background reference */
+  captureBackground?: boolean
+  onBackgroundCaptured?: () => void
 }
 
 export function usePipeline({
@@ -41,10 +46,14 @@ export function usePipeline({
   onDetection,
   onScanFeedback,
   enabled,
+  captureBackground,
+  onBackgroundCaptured,
 }: PipelineConfig) {
   const { capabilities, setVisionReady, setClassifierReady, setLastDetection } = useAppStore()
   const workerRef = useRef<VisionWorkerClient | null>(null)
   const classifierRef = useRef<GlyphClassifier | null>(null)
+  const backgroundRef = useRef<BackgroundFrame | null>(null)
+  const captureNextRef = useRef(false)
   const rafRef = useRef<number | null>(null)
   const processingRef = useRef(false)
   const frameCountRef = useRef(0)
@@ -90,7 +99,23 @@ export function usePipeline({
     try {
       const ctx = getOffscreenCtx(W, H)
       ctx.drawImage(video, 0, 0, W, H)
-      const imageData = ctx.getImageData(0, 0, W, H)
+      const rawImageData = ctx.getImageData(0, 0, W, H)
+
+      // Capture background if requested
+      if (captureNextRef.current) {
+        backgroundRef.current = {
+          data: new Uint8ClampedArray(rawImageData.data),
+          width: W,
+          height: H,
+        }
+        captureNextRef.current = false
+        onBackgroundCaptured?.()
+      }
+
+      // Apply background subtraction if we have a reference frame
+      const imageData = backgroundRef.current
+        ? subtractBackground(rawImageData, backgroundRef.current)
+        : rawImageData
 
       const contours = await worker.processFrame(imageData)
 
@@ -149,4 +174,17 @@ export function usePipeline({
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
   }, [enabled, processOneFrame])
+
+  // Trigger background capture on next frame
+  useEffect(() => {
+    if (captureBackground) captureNextRef.current = true
+  }, [captureBackground])
+
+  const clearBackground = useCallback(() => {
+    backgroundRef.current = null
+  }, [])
+
+  const hasBackground = () => backgroundRef.current !== null
+
+  return { clearBackground, hasBackground }
 }

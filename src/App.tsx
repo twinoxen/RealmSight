@@ -29,6 +29,8 @@ export default function App() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [appReady, setAppReady] = useState(false)
   const [capsChecked, setCapsChecked] = useState(false)
+  const [captureBg, setCaptureBg] = useState(false)
+  const [hasBg, setHasBg] = useState(false)
   const { saveScene, updateScene } = useSceneDB()
   const currentSceneId = useRef<number | null>(null)
   const autoSaveTimer = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -106,12 +108,28 @@ export default function App() {
     [arStatus, setArStatus]
   )
 
-  usePipeline({
+  const { clearBackground } = usePipeline({
     videoRef,
     enabled: isARActive && arHook.mode === 'camera-fallback',
     onDetection,
     onScanFeedback,
+    captureBackground: captureBg,
+    onBackgroundCaptured: () => {
+      setCaptureBg(false)
+      setHasBg(true)
+      setArStatus('detecting')
+    },
   })
+
+  const triggerBgCapture = useCallback(() => {
+    setCaptureBg(true)
+    setArStatus('scanning')
+  }, [setArStatus])
+
+  const triggerBgClear = useCallback(() => {
+    clearBackground()
+    setHasBg(false)
+  }, [clearBackground])
 
   if (import.meta.env.DEV) {
     ;(window as Window & { __scene?: typeof sceneRef }).__scene = sceneRef
@@ -130,7 +148,15 @@ export default function App() {
       }}
     >
       <div id={CANVAS_ID} style={{ position: 'absolute', inset: 0 }} />
-      {capabilities && appReady && capsChecked && <HUD sceneRef={sceneRef} arHook={arHook} />}
+      {capabilities && appReady && capsChecked && (
+        <HUD
+          sceneRef={sceneRef}
+          arHook={arHook}
+          hasBg={hasBg}
+          onCaptureBg={triggerBgCapture}
+          onClearBg={triggerBgClear}
+        />
+      )}
       {capabilities && appReady && capsChecked && <PWAInstallBanner />}
       {capabilities && appReady && !capsChecked && (
         <CapabilitiesScreen capabilities={capabilities} onContinue={() => setCapsChecked(true)} />
