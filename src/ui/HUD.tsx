@@ -13,7 +13,7 @@ export default function HUD({ sceneRef }: HUDProps) {
 
   const onTap = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isActive) return
-    const { clientX, clientY } = 'touches' in e ? e.touches[0] ?? e.changedTouches[0] : e
+    const { clientX, clientY } = 'touches' in e ? e.changedTouches[0] ?? e.touches[0] : e
     handleTap(clientX, clientY)
   }, [isActive, handleTap])
 

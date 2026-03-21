@@ -73,13 +73,13 @@ export class ARSession {
 
   /** Place a shape at an estimated position (iOS fallback tap) */
   placeShapeAtScreen(x: number, y: number) {
-    const pos = new THREE.Vector3(
-      (x / window.innerWidth) * 2 - 1,
-      -((y / window.innerHeight) * 2 - 1),
-      -1.5
-    ).unproject(this.scene.camera)
-    // Place on a flat plane ~1m in front of camera at table height
-    pos.y = -0.5
+    console.log('[ARSession] placeShapeAtScreen called with', x, y)
+    // In fallback mode, place shapes on a virtual flat plane in front of camera
+    const ndcX = (x / window.innerWidth) * 2 - 1
+    // const ndcY = -((y / window.innerHeight) * 2 - 1) // Not used as we place on fixed plane height
+    const pos = new THREE.Vector3(ndcX * 0.5, 0, -1.0)
+      .applyMatrix4(this.scene.camera.matrixWorld)
+    console.log('[ARSession] spawning shape at position', pos)
     this.spawnShape(pos, new THREE.Quaternion())
   }
 
