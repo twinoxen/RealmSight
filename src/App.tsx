@@ -1,11 +1,14 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useAppStore } from '@store/appStore'
 import { detectCapabilities } from '@platform/capabilities'
+import { useScene } from '@scene/useScene'
 import HUD from '@ui/HUD'
 
+const CANVAS_ID = 'canvas-mount'
+
 export default function App() {
-  const canvasRef = useRef<HTMLDivElement>(null)
   const { capabilities, setCapabilities } = useAppStore()
+  const sceneRef = useScene(CANVAS_ID)
 
   useEffect(() => {
     const caps = detectCapabilities()
@@ -13,11 +16,14 @@ export default function App() {
     console.log('[RealmSight] Capabilities:', caps)
   }, [setCapabilities])
 
+  // Expose sceneRef for debugging in dev
+  if (import.meta.env.DEV) {
+    (window as Window & { __scene?: typeof sceneRef })..__scene = sceneRef
+  }
+
   return (
     <div style={{ width: '100vw', height: '100dvh', overflow: 'hidden', background: '#000', position: 'relative' }}>
-      {/* Three.js canvas mount point */}
-      <div ref={canvasRef} id="canvas-mount" style={{ position: 'absolute', inset: 0 }} />
-      {/* React UI overlay */}
+      <div id={CANVAS_ID} style={{ position: 'absolute', inset: 0 }} />
       {capabilities && <HUD />}
     </div>
   )

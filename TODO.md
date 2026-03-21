@@ -15,7 +15,7 @@
 ## Phase 1 — Foundation (Months 1–3)
 
 - [x] **Project scaffold** — Vite + React + TypeScript, pnpm, path aliases, ESLint, PWA plugin, capability detection, Zustand store, HUD shell — Vite + React + TypeScript project, pnpm workspace, ESLint/Prettier config, path aliases, GitHub Actions CI (lint + typecheck on PR)
-- [ ] **Three.js scene pipeline** — Bootstrap Three.js scene: WebGL renderer, camera, scene graph, render loop, resize handling, basic orbit controls for desktop preview
+- [x] **Three.js scene pipeline** — SceneManager (renderer, scene, camera, lights, Draco+KTX2 loader, AnimationMixer, OrbitControls), useScene hook ties lifecycle to React component — Bootstrap Three.js scene: WebGL renderer, camera, scene graph, render loop, resize handling, basic orbit controls for desktop preview
 - [ ] **WebXR AR session** — Detect WebXR immersive-ar support; start/stop XR session on Android Chrome; integrate XRReferenceSpace, hit-test, plane detection; fall through to fallback if unsupported
 - [ ] **iOS camera fallback** — getUserMedia rear camera feed; canvas compositing to overlay Three.js scene on camera frame; OpenCV.js homography surface estimation
 - [ ] **OpenCV.js Web Worker** — Load OpenCV WASM in a dedicated Web Worker; implement adaptive thresholding + contour extraction pipeline; postMessage result to main thread
