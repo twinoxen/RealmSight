@@ -1,15 +1,16 @@
 import { useCallback } from 'react'
 import { useAppStore } from '@store/appStore'
 import type { SceneManager } from '@scene/SceneManager'
-import { useAR } from '@ar/useAR'
+import type { useAR } from '@ar/useAR'
 
 interface HUDProps {
   sceneRef: React.MutableRefObject<SceneManager | null>
+  arHook: ReturnType<typeof useAR>
 }
 
-export default function HUD({ sceneRef }: HUDProps) {
-  const { capabilities } = useAppStore()
-  const { mode, isActive, start, stop, handleTap, clear } = useAR(sceneRef)
+export default function HUD({ arHook }: HUDProps) {
+  const { capabilities, visionReady, classifierReady, lastDetection } = useAppStore()
+  const { mode, isActive, start, stop, handleTap, clear } = arHook
 
   const onTap = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isActive) return
@@ -46,11 +47,20 @@ export default function HUD({ sceneRef }: HUDProps) {
         </div>
       </div>
 
+      {/* Last detection badge */}
+      {isActive && lastDetection && (
+        <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
+          <span style={{ background: 'rgba(99,102,241,0.85)', padding: '6px 16px', borderRadius: 20, fontSize: 14, color: '#fff', fontWeight: 600 }}>
+            Detected: {lastDetection.label} ({Math.round(lastDetection.confidence * 100)}%)
+          </span>
+        </div>
+      )}
+
       {/* Tap hint */}
-      {isActive && (
+      {isActive && !lastDetection && (
         <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
           <span style={{ background: 'rgba(0,0,0,0.5)', padding: '6px 16px', borderRadius: 20, fontSize: 13, color: '#fff' }}>
-            Tap to place a shape
+            Draw a glyph or tap to place a shape
           </span>
         </div>
       )}
@@ -79,8 +89,7 @@ export default function HUD({ sceneRef }: HUDProps) {
       {import.meta.env.DEV && capabilities && (
         <div style={{ position: 'absolute', top: 70, right: 16, background: 'rgba(0,0,0,0.7)', padding: '6px 10px', borderRadius: 8, fontSize: 11, lineHeight: 1.6, pointerEvents: 'none' }}>
           <div>WebXR: {capabilities.webxr ? '✅' : '❌'} | WebGL2: {capabilities.webgl2 ? '✅' : '❌'}</div>
-          <div>iOS: {capabilities.isIOS ? '✅' : '❌'} | Android: {capabilities.isAndroid ? '✅' : '❌'}</div>
-          <div>Quality: {capabilities.qualityTier.toUpperCase()} | RAM: {capabilities.deviceMemoryGb ?? '?'}GB</div>
+          <div>Vision: {visionReady ? '✅' : '⏳'} | Classifier: {classifierReady ? '✅' : '⏳'}</div>
           <div>AR mode: {mode || 'inactive'}</div>
         </div>
       )}

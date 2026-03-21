@@ -1,101 +1,52 @@
-import { useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 
-/**
- * Starts the rear camera feed and renders it behind the Three.js canvas.
- * Used on iOS Safari/Chrome where WebXR immersive-ar is not supported.
- */
-export function useCameraFallback() {
+export function useCameraFallback(enabled: boolean) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
-  const stop = useCallback(() => {
-    if (!videoRef.current) return
+  useEffect(() => {
+    if (!enabled) return
 
-    const stream = videoRef.current.srcObject as MediaStream | null
-    stream?.getTracks().forEach(t => t.stop())
-    videoRef.current.remove()
-    videoRef.current = null
-
-    // Reset Three.js canvas styling
-    const mount = document.getElementById('canvas-mount')
-    const canvas = mount?.querySelector('canvas') as HTMLCanvasElement | null
-    if (canvas) {
-      canvas.style.background = ''
-      canvas.style.position = ''
-      canvas.style.zIndex = ''
-    }
-    if (mount) mount.style.zIndex = ''
-  }, [])
-
-  const start = useCallback(async () => {
-    if (videoRef.current) return // already running
-
+    let active = true
     const video = document.createElement('video')
-    // All attributes required for autoplay camera on iOS WebKit
-    video.setAttribute('playsinline', 'true')
-    video.setAttribute('webkit-playsinline', 'true')
-    video.setAttribute('autoplay', 'true')
-    video.setAttribute('muted', 'true')
+    video.playsInline = true
     video.muted = true
+    video.autoplay = true
+    video.setAttribute('playsinline', '')
+    video.setAttribute('webkit-playsinline', '')
     video.style.cssText = [
-      'position:fixed',
-      'inset:0',
-      'width:100%',
-      'height:100%',
-      'object-fit:cover',
-      'z-index:1',        // Behind canvas but above body
-      'background:#000',
-      'pointer-events:none', // Let taps pass through to HUD overlay
+      'position:fixed','inset:0','width:100%','height:100%',
+      'object-fit:cover','z-index:1','background:#000',
+      'pointer-events:none',
     ].join(';')
-    document.body.prepend(video)
+    document.body.insertBefore(video, document.body.firstChild)
     videoRef.current = video
 
-    // Make Three.js canvas transparent so camera shows through
     const mount = document.getElementById('canvas-mount')
     const canvas = mount?.querySelector('canvas') as HTMLCanvasElement | null
-    if (canvas) {
-      canvas.style.background = 'transparent'
-      canvas.style.position = 'absolute'
-      canvas.style.zIndex = '2'
-      canvas.style.pointerEvents = 'none' // Allow touches to pass through to HUD/etc if needed
+    if (mount) { mount.style.position = 'fixed'; mount.style.inset = '0'; mount.style.zIndex = '2' }
+    if (canvas) { canvas.style.background = 'transparent'; canvas.style.position = 'absolute'; canvas.style.inset = '0' }
+    window.dispatchEvent(new CustomEvent('realmsight:set-clear-alpha', { detail: 0 }))
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+      .then(stream => {
+        if (!active) { stream.getTracks().forEach(t => t.stop()); return }
+        video.srcObject = stream
+        video.play().catch(_err => setTimeout(() => video.play().catch(console.warn), 300))
+      })
+      .catch(err => console.error('[CameraFallback] getUserMedia failed:', err))
+
+    return () => {
+      active = false
+      const stream = video.srcObject as MediaStream | null
+      stream?.getTracks().forEach(t => t.stop())
+      video.srcObject = null
+      video.remove()
+      videoRef.current = null
+      if (canvas) { canvas.style.background = ''; canvas.style.position = ''; canvas.style.inset = '' }
+      if (mount) { mount.style.zIndex = '' }
+      window.dispatchEvent(new CustomEvent('realmsight:set-clear-alpha', { detail: 1 }))
     }
-    if (mount) mount.style.zIndex = '2'
+  }, [enabled])
 
-    // Try progressively looser constraints
-    const constraints = [
-      { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-      { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-      { video: { facingMode: { ideal: 'environment' } }, audio: false },
-      { video: true, audio: false }
-    ]
-
-    let stream: MediaStream | null = null
-    let lastErr: any = null
-
-    for (const constraint of constraints) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia(constraint)
-        break
-      } catch (err) {
-        lastErr = err
-        console.warn(`[CameraFallback] Failed with constraint ${JSON.stringify(constraint)}:`, err)
-      }
-    }
-
-    if (!stream) {
-      console.error('[CameraFallback] All getUserMedia attempts failed', lastErr)
-      stop()
-      throw lastErr || new Error('Camera not available')
-    }
-
-    video.srcObject = stream
-    
-    // Explicit play() call is needed on some browsers
-    try {
-      await video.play()
-    } catch (err) {
-      console.warn('[CameraFallback] play() failed:', err)
-    }
-  }, [stop])
-
-  return { start, stop, videoRef }
+  return videoRef
 }
