@@ -25,6 +25,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB — TF.js bundle is ~2.4MB
         runtimeCaching: [
           {
             urlPattern: /\/models\/.+\.glb$/,
